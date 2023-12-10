@@ -17,12 +17,12 @@ class Product extends Model
         'stok',
     ];
 
-    function getAssetFoto()
+    public function getAssetFoto()
     {
-        return asset('storage/' . $this->foto);
+        return asset('storage/'.$this->foto);
     }
 
-    function user()
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

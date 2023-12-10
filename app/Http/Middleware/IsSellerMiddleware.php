@@ -15,11 +15,12 @@ class IsSellerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user()->isSeller()) {
+        if (! $request->user()->isSeller()) {
             return response()->json([
                 'message' => 'you are not a seller',
             ], 403);
         }
+
         return $next($request);
     }
 }
