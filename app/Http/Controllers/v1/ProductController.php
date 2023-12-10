@@ -242,13 +242,13 @@ class ProductController extends Controller
                 ], 400);
             }
 
-            $cart = $user->cart()->where('product_id', $product->id)->first();
+            $cart = $user->carts()->where('product_id', $product->id)->first();
 
             if ($cart) {
                 $cart->jumlah += $request->jumlah;
                 $cart->save();
             } else {
-                $user->cart()->attach($product->id, [
+                $user->carts()->attach($product->id, [
                     'jumlah' => $request->jumlah,
                 ]);
             }
