@@ -228,6 +228,13 @@ class ProductController extends Controller
             $user = auth()->user();
             $stok = $product->stok;
 
+            if ($product->user_id === $user->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You cannot buy your own product',
+                ], 403);
+            }
+
             if ($stok < $request->jumlah) {
                 return response()->json([
                     'status' => 'error',
