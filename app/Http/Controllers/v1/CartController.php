@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -12,10 +13,21 @@ class CartController extends Controller
         try {
             $page = $request->input('page', 1);
             $limit = $request->input('limit', 10);
+            $search = $request->input('search');
+            $sortBy = $request->input('sort_by', 'created_at');
+            $orderBy = $request->input('order_by', 'desc');
 
-            $carts = $request->user()->carts()
-                ->with('product')
-                ->paginate($limit, ['*'], 'page', $page);
+            $carts = Cart::where('user_id', $request->user()->id);
+            $carts = $carts->when($search, function ($query, $search) {
+                $query->whereHas('product', function ($query) use ($search) {
+                    $query->where('nama', 'like', "%{$search}%");
+                });
+            });
+            $carts = $carts->when($sortBy, function ($query, $sortBy) use ($orderBy) {
+                $query->orderBy($sortBy, $orderBy);
+            });
+            $carts = $carts->with('product');
+            $carts = $carts->paginate($limit, ['*'], 'page', $page);
 
             return response()->json([
                 'status' => 'success',
