@@ -56,6 +56,8 @@ Route::group(
                             ->name('update');
                         Route::delete('/{id}', [ProductController::class, 'destroy'])
                             ->name('destroy');
+                        Route::post('/{id}/to-cart', [ProductController::class, 'addToCart'])
+                            ->name('to-cart');
                     }
                 );
             }
