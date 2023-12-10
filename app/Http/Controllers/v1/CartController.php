@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    function index(Request $request)
+    public function index(Request $request)
     {
         try {
             $page = $request->input('page', 1);
@@ -48,7 +48,7 @@ class CartController extends Controller
         }
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
         try {
             $this->validate($request, [
@@ -58,7 +58,7 @@ class CartController extends Controller
 
             $product = Product::find($request->product_id);
 
-            if (!$product) {
+            if (! $product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'product not found',
@@ -120,7 +120,7 @@ class CartController extends Controller
         }
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         try {
             $this->validate($request, [
@@ -129,7 +129,7 @@ class CartController extends Controller
 
             $cart = $request->user()->carts()->where('id', $id)->first();
 
-            if (!$cart) {
+            if (! $cart) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'cart not found',
@@ -162,12 +162,12 @@ class CartController extends Controller
         }
     }
 
-    function destroy(Request $request, $id)
+    public function destroy(Request $request, $id)
     {
         try {
             $cart = $request->user()->carts()->where('id', $id)->first();
 
-            if (!$cart) {
+            if (! $cart) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'cart not found',

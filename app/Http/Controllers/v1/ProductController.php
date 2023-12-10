@@ -107,7 +107,7 @@ class ProductController extends Controller
         try {
             $product = Product::find($id);
 
-            if (!$product) {
+            if (! $product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
@@ -134,8 +134,8 @@ class ProductController extends Controller
 
                 $filename = $file->store('products', 'public');
 
-                if ($product->foto && file_exists(storage_path('app/public/' . $product->foto))) {
-                    Storage::delete('public/' . $product->foto);
+                if ($product->foto && file_exists(storage_path('app/public/'.$product->foto))) {
+                    Storage::delete('public/'.$product->foto);
                 }
             }
 
@@ -166,7 +166,7 @@ class ProductController extends Controller
         try {
             $product = Product::find($id);
 
-            if (!$product) {
+            if (! $product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
@@ -191,8 +191,8 @@ class ProductController extends Controller
             $foto = $product->foto;
             $product->delete();
 
-            if ($foto && file_exists(storage_path('app/public/' . $foto))) {
-                Storage::delete('public/' . $foto);
+            if ($foto && file_exists(storage_path('app/public/'.$foto))) {
+                Storage::delete('public/'.$foto);
             }
 
             return response()->json([
@@ -214,7 +214,7 @@ class ProductController extends Controller
         try {
             $product = Product::find($id);
 
-            if (!$product) {
+            if (! $product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
