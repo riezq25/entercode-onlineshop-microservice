@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\newOrderBuyerMail;
+use App\Mail\paidOrderMail;
+use App\Mail\processedOrderMail;
 use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -109,6 +113,7 @@ class TransactionController extends Controller
 
             $cart->delete();
 
+            $transaction->product->foto = $transaction->product->getAssetFoto();
             return response()->json([
                 'status' => 'success',
                 'message' => 'success create transaction',
@@ -140,6 +145,10 @@ class TransactionController extends Controller
             $transaction->status = 'dibayar';
             $transaction->save();
 
+            $transaction->product->foto = $transaction->product->getAssetFoto();
+            $seller = $transaction->product->user;
+            Mail::to($request->user()->email)->send(new paidOrderMail($transaction,  $seller));
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'success pay transaction',
@@ -158,24 +167,36 @@ class TransactionController extends Controller
     {
         try {
             $user = $request->user();
-            $transaction = Transaction::where(
-                function ($query) use ($user) {
-                    $query->whereHas('product', function ($query) use ($user) {
-                        $query->where('user_id',  $user->id);
-                    });
-                }
-            )->where('id', $id)
+            $transaction = Transaction::where('id', $id)
                 ->firstOrFail();
 
-            if ($transaction->status != 'dibayar') {
+            if ($user->id != $transaction->product->user_id) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'transaction status is not dibayar',
+                    'message' => 'you are not the seller',
+                ], 400);
+            }
+
+            if ($transaction->status == 'pending') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'transaction is not paid',
+                ], 400);
+            }
+
+            if ($transaction->status == 'diproses') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'transaction is already processed',
                 ], 400);
             }
 
             $transaction->status = 'diproses';
             $transaction->save();
+
+            $transaction->product->foto = $transaction->product->getAssetFoto();
+            $buyer = $transaction->user;
+            Mail::to($request->user()->email)->send(new processedOrderMail($transaction,  $buyer));
 
             return response()->json([
                 'status' => 'success',

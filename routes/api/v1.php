@@ -82,6 +82,8 @@ Route::group(
                     ->name('update');
                 Route::delete('/{id}', [CartController::class, 'destroy'])
                     ->name('destroy');
+                Route::post('/{id}/checkout', [CartController::class, 'checkout'])
+                    ->name('checkout');
             }
         );
 
@@ -98,12 +100,12 @@ Route::group(
                     ->name('show');
                 Route::delete('/{id}', [TransactionController::class, 'destroy'])
                     ->name('destroy');
-                    Route::put('/{id}/pay', [TransactionController::class, 'payTransaction'])
-                        ->name('pay');
 
-
-                Route::put('/{id}/process', [TransactionController::class, 'processTransaction'])
-                    ->name('process');
+                Route::get('/{id}/pay', [TransactionController::class, 'payTransaction'])
+                    ->name('pay');
+                Route::get('/{id}/process', [TransactionController::class, 'processTransaction'])
+                    ->name('process')
+                    ->middleware('is_seller');
             }
         );
     }

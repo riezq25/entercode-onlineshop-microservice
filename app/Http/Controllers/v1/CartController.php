@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\newOrderBuyerMail;
+use App\Mail\paidOrderMail;
 use App\Models\Cart;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class CartController extends Controller
 {
@@ -216,13 +219,14 @@ class CartController extends Controller
             $cart->delete();
 
             $transaction = $request->user()->transactions()->create([
-                'order_id' => 'TRX' . time(),
+                'order_id' => 'TRX-' . time(),
                 'product_id' => $product->id,
                 'harga' => $product->harga,
                 'jumlah' => $cart->jumlah,
                 'total_harga' => $product->harga * $cart->jumlah,
             ]);
 
+            $transaction->product->foto = $transaction->product->getAssetFoto();
             return response()->json([
                 'status' => 'success',
                 'message' => 'success checkout cart',
