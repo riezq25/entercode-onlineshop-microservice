@@ -248,7 +248,8 @@ class ProductController extends Controller
                 $cart->jumlah += $request->jumlah;
                 $cart->save();
             } else {
-                $user->carts()->attach($product->id, [
+                $cart = $user->carts()->create([
+                    'product_id' => $product->id,
                     'jumlah' => $request->jumlah,
                 ]);
             }
