@@ -23,7 +23,7 @@ return new class extends Migration
                     'penjual',
                     'pembeli',
                 ]
-            )->default('user');
+            )->default('penjual');
             $table->rememberToken();
             $table->timestamps();
         });
