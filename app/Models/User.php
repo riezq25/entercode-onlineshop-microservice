@@ -21,7 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
     ];
 
     /**
@@ -44,17 +44,17 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    function isSeller()
+    public function isSeller()
     {
         return $this->role === 'penjual';
     }
 
-    function isBuyer()
+    public function isBuyer()
     {
         return $this->role === 'pembeli';
     }
 
-    function products()
+    public function products()
     {
         return $this->hasMany(Product::class);
     }

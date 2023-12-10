@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    function index(Request $request)
+    public function index(Request $request)
     {
         try {
             $page = $request->input('page', 1);
@@ -44,7 +44,7 @@ class ProductController extends Controller
         }
     }
 
-    function store(Request $request)
+    public function store(Request $request)
     {
         try {
             $this->validate($request, [
@@ -82,7 +82,7 @@ class ProductController extends Controller
         }
     }
 
-    function show($id)
+    public function show($id)
     {
         try {
             $product = Product::findOrFail($id);
@@ -102,12 +102,12 @@ class ProductController extends Controller
         }
     }
 
-    function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         try {
             $product = Product::find($id);
 
-            if (!$product) {
+            if (! $product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
@@ -134,8 +134,8 @@ class ProductController extends Controller
 
                 $filename = $file->store('products', 'public');
 
-                if ($product->foto && file_exists(storage_path('app/public/' . $product->foto))) {
-                    Storage::delete('public/' . $product->foto);
+                if ($product->foto && file_exists(storage_path('app/public/'.$product->foto))) {
+                    Storage::delete('public/'.$product->foto);
                 }
             }
 
@@ -161,12 +161,12 @@ class ProductController extends Controller
         }
     }
 
-    function destroy($id)
+    public function destroy($id)
     {
         try {
             $product = Product::find($id);
 
-            if (!$product) {
+            if (! $product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
@@ -183,8 +183,8 @@ class ProductController extends Controller
             $foto = $product->foto;
             $product->delete();
 
-            if ($foto && file_exists(storage_path('app/public/' . $foto))) {
-                Storage::delete('public/' . $foto);
+            if ($foto && file_exists(storage_path('app/public/'.$foto))) {
+                Storage::delete('public/'.$foto);
             }
 
             return response()->json([

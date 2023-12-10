@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::group(
     [
         'prefix' => 'v1',
-        'as' => 'v1.'
+        'as' => 'v1.',
     ],
     function () {
         include_once 'api/v1.php';
