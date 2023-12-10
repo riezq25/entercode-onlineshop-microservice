@@ -15,4 +15,14 @@ class Product extends Model
         'harga',
         'stok',
     ];
+
+    function getAssetFoto()
+    {
+        return asset('storage/' . $this->foto);
+    }
+
+    function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

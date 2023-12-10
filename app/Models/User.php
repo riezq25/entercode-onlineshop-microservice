@@ -48,4 +48,14 @@ class User extends Authenticatable
     {
         return $this->role === 'penjual';
     }
+
+    function isBuyer()
+    {
+        return $this->role === 'pembeli';
+    }
+
+    function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
