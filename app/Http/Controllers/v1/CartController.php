@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
@@ -29,6 +30,10 @@ class CartController extends Controller
             $carts = $carts->with('product');
             $carts = $carts->paginate($limit, ['*'], 'page', $page);
 
+            foreach ($carts as $cart) {
+                $cart->product->foto = $cart->product->getAssetFoto();
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'success retrieve carts',
@@ -51,15 +56,20 @@ class CartController extends Controller
                 'jumlah' => 'required|integer|min:1',
             ]);
 
-            $product = $request->user()->products()
-                ->where('id', $request->product_id)
-                ->first();
+            $product = Product::find($request->product_id);
 
             if (!$product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'product not found',
                 ], 404);
+            }
+
+            if ($product->user_id == $request->user()->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'you cannot add your own product to cart',
+                ], 400);
             }
 
             if ($product->stok < $request->jumlah) {
@@ -74,6 +84,13 @@ class CartController extends Controller
                 ->first();
 
             if ($cart) {
+                if ($cart->jumlah + $request->jumlah > $product->stok) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'product already in cart and out of stock',
+                    ], 400);
+                }
+
                 $cart->jumlah += $request->jumlah;
                 $cart->save();
 
@@ -82,12 +99,12 @@ class CartController extends Controller
                     'message' => 'success add product to cart',
                     'data' => $cart,
                 ]);
+            } else {
+                $cart = $request->user()->carts()->create([
+                    'product_id' => $request->product_id,
+                    'jumlah' => $request->jumlah,
+                ]);
             }
-
-            $cart = $request->user()->carts()->create([
-                'product_id' => $request->product_id,
-                'jumlah' => $request->jumlah,
-            ]);
 
             return response()->json([
                 'status' => 'success',
