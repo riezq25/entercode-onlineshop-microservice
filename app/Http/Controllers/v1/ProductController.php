@@ -245,6 +245,13 @@ class ProductController extends Controller
             $cart = $user->carts()->where('product_id', $product->id)->first();
 
             if ($cart) {
+                if ($cart->jumlah + $request->jumlah > $stok) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Product already in cart and out of stock',
+                    ], 400);
+                }
+
                 $cart->jumlah += $request->jumlah;
                 $cart->save();
             } else {
