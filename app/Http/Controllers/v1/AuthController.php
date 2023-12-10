@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    function login(Request $request)
+    public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
@@ -17,7 +17,7 @@ class AuthController extends Controller
 
         $credentials = $request->only(['email', 'password']);
 
-        if (!auth()->attempt($credentials)) {
+        if (! auth()->attempt($credentials)) {
             return response()->json([
                 'message' => 'User not found. Check your credentials',
             ], 401);
@@ -34,7 +34,7 @@ class AuthController extends Controller
         ]);
     }
 
-    function logout()
+    public function logout()
     {
         $token = auth()->user()->currentAccessToken()->delete();
 
@@ -43,7 +43,7 @@ class AuthController extends Controller
         ]);
     }
 
-    function me()
+    public function me()
     {
         return response()->json([
             'message' => 'Success',
@@ -51,10 +51,11 @@ class AuthController extends Controller
         ]);
     }
 
-    function revoke()
+    public function revoke()
     {
         auth()->user()->tokens()->delete();
         $token = auth()->user()->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'message' => 'Tokens revoked',
             'data' => [
@@ -64,7 +65,7 @@ class AuthController extends Controller
         ]);
     }
 
-    function register(Request $request)
+    public function register(Request $request)
     {
         $request->validate([
             'name' => 'required|string',

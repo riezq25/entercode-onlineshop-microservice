@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\v1\AuthController;
+use App\Http\Controllers\v1\ProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(
@@ -24,6 +25,39 @@ Route::group(
                     ->name('me');
                 Route::get('revoke', [AuthController::class, 'revoke'])
                     ->name('revoke');
+            }
+        );
+    }
+);
+
+Route::group(
+    [
+        'middleware' => 'auth:sanctum',
+    ],
+    function () {
+        Route::group(
+            [
+                'prefix' => 'products',
+                'as' => 'products.',
+            ],
+            function () {
+                Route::get('/', [ProductController::class, 'index'])
+                    ->name('index');
+                Route::get('/{id}', [ProductController::class, 'show'])
+                    ->name('show');
+                Route::group(
+                    [
+                        'middleware' => 'is_seller',
+                    ],
+                    function () {
+                        Route::post('/', [ProductController::class, 'store'])
+                            ->name('store');
+                        Route::put('/{id}', [ProductController::class, 'update'])
+                            ->name('update');
+                        Route::delete('/{id}', [ProductController::class, 'destroy'])
+                            ->name('destroy');
+                    }
+                );
             }
         );
     }
