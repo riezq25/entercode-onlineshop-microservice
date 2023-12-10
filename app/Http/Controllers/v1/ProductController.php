@@ -107,7 +107,7 @@ class ProductController extends Controller
         try {
             $product = Product::find($id);
 
-            if (! $product) {
+            if (!$product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
@@ -134,8 +134,8 @@ class ProductController extends Controller
 
                 $filename = $file->store('products', 'public');
 
-                if ($product->foto && file_exists(storage_path('app/public/'.$product->foto))) {
-                    Storage::delete('public/'.$product->foto);
+                if ($product->foto && file_exists(storage_path('app/public/' . $product->foto))) {
+                    Storage::delete('public/' . $product->foto);
                 }
             }
 
@@ -166,7 +166,7 @@ class ProductController extends Controller
         try {
             $product = Product::find($id);
 
-            if (! $product) {
+            if (!$product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Product not found',
@@ -180,17 +180,76 @@ class ProductController extends Controller
                 ], 403);
             }
 
+            // restrict delete if product on cart
+            if ($product->cart()->count() > 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product on cart, cannot delete',
+                ], 403);
+            }
+
             $foto = $product->foto;
             $product->delete();
 
-            if ($foto && file_exists(storage_path('app/public/'.$foto))) {
-                Storage::delete('public/'.$foto);
+            if ($foto && file_exists(storage_path('app/public/' . $foto))) {
+                Storage::delete('public/' . $foto);
             }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'success delete product',
                 'message' => 'Product deleted',
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'something went wrong',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function addToCart(Request $request, $id)
+    {
+        try {
+            $product = Product::find($id);
+
+            if (!$product) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product not found',
+                ], 404);
+            }
+
+            $this->validate($request, [
+                'jumlah' => 'required|integer|min:1',
+            ]);
+
+            $user = auth()->user();
+            $stok = $product->stok;
+
+            if ($stok < $request->jumlah) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product out of stock',
+                ], 400);
+            }
+
+            $cart = $user->cart()->where('product_id', $product->id)->first();
+
+            if ($cart) {
+                $cart->jumlah += $request->jumlah;
+                $cart->save();
+            } else {
+                $user->cart()->attach($product->id, [
+                    'jumlah' => $request->jumlah,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'success add product to cart',
+                'data' => $cart,
             ]);
         } catch (\Throwable $th) {
             return response()->json([
