@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('order_id')->unique();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('product_id')->constrained('products');
-            $table->integer('total_harga');
+            $table->unsignedInteger('harga');
+            $table->unsignedInteger('jumlah');
+            $table->unsignedInteger('total_harga');
             $table->enum('status', ['pending', 'dibayar', 'diproses'])->default('pending');
             $table->timestamps();
         });

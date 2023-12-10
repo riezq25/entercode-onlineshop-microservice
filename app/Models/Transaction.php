@@ -13,6 +13,8 @@ class Transaction extends Model
         'order_id',
         'user_id',
         'product_id',
+        'harga',
+        'jumlah',
         'total_harga',
         'status',
     ];
