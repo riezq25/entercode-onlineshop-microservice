@@ -3,6 +3,7 @@
 use App\Http\Controllers\v1\AuthController;
 use App\Http\Controllers\v1\CartController;
 use App\Http\Controllers\v1\ProductController;
+use App\Http\Controllers\v1\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -81,6 +82,30 @@ Route::group(
                     ->name('update');
                 Route::delete('/{id}', [CartController::class, 'destroy'])
                     ->name('destroy');
+                Route::post('/{id}/checkout', [CartController::class, 'checkout'])
+                    ->name('checkout');
+            }
+        );
+
+        // Transaction Routes
+        Route::group(
+            [
+                'prefix' => 'transactions',
+                'as' => 'transactions.',
+            ],
+            function () {
+                Route::get('/', [TransactionController::class, 'index'])
+                    ->name('index');
+                Route::get('/{id}', [TransactionController::class, 'show'])
+                    ->name('show');
+                Route::delete('/{id}', [TransactionController::class, 'destroy'])
+                    ->name('destroy');
+
+                Route::get('/{id}/pay', [TransactionController::class, 'payTransaction'])
+                    ->name('pay');
+                Route::get('/{id}/process', [TransactionController::class, 'processTransaction'])
+                    ->name('process')
+                    ->middleware('is_seller');
             }
         );
     }
