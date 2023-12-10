@@ -58,7 +58,7 @@ class CartController extends Controller
 
             $product = Product::find($request->product_id);
 
-            if (! $product) {
+            if (!$product) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'product not found',
@@ -129,7 +129,7 @@ class CartController extends Controller
 
             $cart = $request->user()->carts()->where('id', $id)->first();
 
-            if (! $cart) {
+            if (!$cart) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'cart not found',
@@ -167,7 +167,7 @@ class CartController extends Controller
         try {
             $cart = $request->user()->carts()->where('id', $id)->first();
 
-            if (! $cart) {
+            if (!$cart) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'cart not found',
@@ -180,6 +180,65 @@ class CartController extends Controller
                 'status' => 'success',
                 'message' => 'success delete cart',
             ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'something went wrong',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function checkout(Request $request, $id)
+    {
+        try {
+            $cart = $request->user()->carts()->where('id', $id)->first();
+
+            if (!$cart) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'cart not found',
+                ], 404);
+            }
+
+            $product = $cart->product;
+
+            if ($product->stok < $cart->jumlah) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'product out of stock',
+                ], 400);
+            }
+
+            $product->stok -= $cart->jumlah;
+            $product->save();
+
+            $cart->delete();
+
+            $transaction = $request->user()->transactions()->create([
+                'order_id' => 'TRX' . time(),
+                'product_id' => $product->id,
+                'harga' => $product->harga,
+                'jumlah' => $cart->jumlah,
+                'total_harga' => $product->harga * $cart->jumlah,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'success checkout cart',
+                'data' => $transaction,
+            ]);
+        } catch (\Throwable $th) {
+            if ($product) {
+                $product->stok += $cart->jumlah;
+                $product->save();
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'something went wrong',
+                'error' => $th->getMessage(),
+            ], 500);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => 'error',
