@@ -180,6 +180,14 @@ class ProductController extends Controller
                 ], 403);
             }
 
+            // restrict delete if product on cart
+            if ($product->cart()->count() > 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product on cart, cannot delete',
+                ], 403);
+            }
+
             $foto = $product->foto;
             $product->delete();
 
@@ -191,6 +199,72 @@ class ProductController extends Controller
                 'status' => 'success',
                 'message' => 'success delete product',
                 'message' => 'Product deleted',
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'something went wrong',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function addToCart(Request $request, $id)
+    {
+        try {
+            $product = Product::find($id);
+
+            if (! $product) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product not found',
+                ], 404);
+            }
+
+            $this->validate($request, [
+                'jumlah' => 'required|integer|min:1',
+            ]);
+
+            $user = auth()->user();
+            $stok = $product->stok;
+
+            if ($product->user_id === $user->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You cannot buy your own product',
+                ], 403);
+            }
+
+            if ($stok < $request->jumlah) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Product out of stock',
+                ], 400);
+            }
+
+            $cart = $user->carts()->where('product_id', $product->id)->first();
+
+            if ($cart) {
+                if ($cart->jumlah + $request->jumlah > $stok) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Product already in cart and out of stock',
+                    ], 400);
+                }
+
+                $cart->jumlah += $request->jumlah;
+                $cart->save();
+            } else {
+                $cart = $user->carts()->create([
+                    'product_id' => $product->id,
+                    'jumlah' => $request->jumlah,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'success add product to cart',
+                'data' => $cart,
             ]);
         } catch (\Throwable $th) {
             return response()->json([

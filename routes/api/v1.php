@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\v1\AuthController;
+use App\Http\Controllers\v1\CartController;
 use App\Http\Controllers\v1\ProductController;
 use Illuminate\Support\Facades\Route;
 
+// Auth Routes
 Route::group(
     [
         'prefix' => 'auth',
@@ -35,6 +37,7 @@ Route::group(
         'middleware' => 'auth:sanctum',
     ],
     function () {
+        // Product Routes
         Route::group(
             [
                 'prefix' => 'products',
@@ -56,8 +59,28 @@ Route::group(
                             ->name('update');
                         Route::delete('/{id}', [ProductController::class, 'destroy'])
                             ->name('destroy');
+                        Route::post('/{id}/to-cart', [ProductController::class, 'addToCart'])
+                            ->name('to-cart');
                     }
                 );
+            }
+        );
+
+        // Cart Routes
+        Route::group(
+            [
+                'prefix' => 'carts',
+                'as' => 'carts.',
+            ],
+            function () {
+                Route::get('/', [CartController::class, 'index'])
+                    ->name('index');
+                Route::post('/', [CartController::class, 'store'])
+                    ->name('store');
+                Route::put('/{id}', [CartController::class, 'update'])
+                    ->name('update');
+                Route::delete('/{id}', [CartController::class, 'destroy'])
+                    ->name('destroy');
             }
         );
     }
